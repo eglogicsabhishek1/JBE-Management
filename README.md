@@ -1,6 +1,6 @@
-## JB-Management
+## JBE-Management
 
-JB-Management is a FastAPI-based backend project designed to manage job applications and automate user distribution and backup operations for job alerts. The system connects to a MySQL database and provides RESTful APIs for:
+JBE-Management is a FastAPI-based backend project designed to manage job applications and automate user distribution and backup operations for job alerts. The system connects to a MySQL database and provides RESTful APIs for:
 
 - Counting active users grouped by frequency and next email date
 - Creating backups of job alerts tables
@@ -21,8 +21,10 @@ JB-Management/
 ├── app/
 │   ├── api/
 │   │   └── user_count_routes.py
+|   |   └── user_count_routes.py
 │   ├── crud/
-│   │   └── db_query.py
+│   │   └── user_count_crud.py
+|   |   └── distribute_user_crud.py
 │   ├── database.py
 │   └── main.py
 ├── .env
