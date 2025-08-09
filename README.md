@@ -17,14 +17,14 @@ JBE-Management is a FastAPI-based backend project designed to manage job applica
 ### Project Structure
 
 ```
-JB-Management/
+JBE-Management/
 ├── app/
 │   ├── api/
-│   │   └── user_count_routes.py
-|   |   └── user_count_routes.py
+│   │   ├── user_count_routes.py
+│   │   └── distributes_user_routes.py
 │   ├── crud/
-│   │   └── user_count_crud.py
-|   |   └── distribute_user_crud.py
+│   │   ├── user_count_crud.py
+│   │   └── distribute_user_crud.py
 │   ├── database.py
 │   └── main.py
 ├── .env
