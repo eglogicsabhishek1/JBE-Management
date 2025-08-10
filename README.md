@@ -22,9 +22,11 @@ JBE-Management/
 │   ├── api/
 │   │   ├── user_count_routes.py
 │   │   └── distributes_user_routes.py
+|   |   └── restore_table_routes.py
 │   ├── crud/
 │   │   ├── user_count_crud.py
 │   │   └── distribute_user_crud.py
+|   |   └── restore_table_crud.py
 │   ├── database.py
 │   └── main.py
 ├── .env
