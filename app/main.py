@@ -20,7 +20,8 @@ from typing import Dict, Any
 # Import API route modules
 from app.api import (
     user_count_routes,
-    distributes_user_routes
+    distributes_user_routes,
+    restore_table_routes
 )
 from app.database import create_tables
 
@@ -110,6 +111,8 @@ app.include_router(
     tags=["User Distribution"]
 )
 
+app.include_router(restore_table_routes.router)
+
 @app.get("/", tags=["Health Check"])
 def read_root() -> Dict[str, Any]:
     """
@@ -130,9 +133,9 @@ def read_root() -> Dict[str, Any]:
             "redoc": "/redoc"
         },
         "endpoints": {
-            "user_count": "/api/v1/user_count",
-            "distribute_users": "/api/v1/distribute_users",
-            "restore_table": "/api/v1/restore_table"
+            "user_count": "/user_count",
+            "distribute_users": "/distribute_users",
+            "restore_table": "/restore_table"
         },
         "description": "API for managing job applications and user distribution for email alerts"
     }

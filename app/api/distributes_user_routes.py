@@ -13,8 +13,7 @@ from app.crud import distribute_user_crud
 
 # Create router with tags for API documentation
 router = APIRouter(
-    tags=["User Distribution"], 
-    prefix="/api/v1"
+    tags=["User Distribution"]
 )
 
 @router.get("/distribute_users")
@@ -42,6 +41,20 @@ def distribute_users_by_frequency(
         example=4,
         ge=1,
         le=100
+    ),
+    backup: bool = Query(
+        False,
+        description="If true, copy data from source_table to backup_table instead of distributing users"
+    ),
+    source_table: str = Query(
+        None,
+        description="Source table to copy from (required if backup is true)",
+        example="job_alerts"
+    ),
+    backup_table: str = Query(
+        None,
+        description="Backup table to copy to (required if backup is true)",
+        example="job_alerts_backup"
     ),
     db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
@@ -72,7 +85,7 @@ def distribute_users_by_frequency(
         HTTPException: 400 for invalid input parameters
     
     Example:
-        GET /api/v1/distribute_users?db_name=mydb&frequency=7&parts=4
+        GET distribute_users?db_name=mydb&table_name=table_name&frequency=7&parts=4
     """
     try:
         # Validate input parameters
@@ -81,36 +94,50 @@ def distribute_users_by_frequency(
                 status_code=400, 
                 detail="Database name cannot be empty"
             )
-        
         if not target_table.strip():
             raise HTTPException(
                 status_code=400, 
                 detail="Table name cannot be empty"
             )
-        
-        # Call the CRUD function to perform user distribution
-        result = distribute_user_crud.distribute_users(
-            db=db,
-            db_name=db_name.strip(),
-            target_table=target_table.strip(),
-            frequency=frequency,
-            parts=parts
-        )
-        
-        return {
-            "success": True,
-            "message": f"Successfully distributed users with frequency {frequency} into {parts} partitions",
-            "data": result
-        }
-        
+
+        if backup:
+            # Backup mode: require source_table and backup_table
+            if not source_table or not source_table.strip():
+                raise HTTPException(
+                    status_code=400,
+                    detail="source_table is required when backup is true"
+                )
+            if not backup_table or not backup_table.strip():
+                raise HTTPException(
+                    status_code=400,
+                    detail="backup_table is required when backup is true"
+                )
+            # Call CRUD to copy data from source_table to backup_table AND distribute users
+            backup_result = distribute_user_crud.create_backup_table(
+                db=db,
+                db_name=db_name.strip(),
+                source_table=source_table.strip(),
+                backup_table=backup_table.strip(),
+                frequency=frequency,
+                parts=parts
+            )
+            return backup_result
+        else:
+            # Normal distribution mode
+            result = distribute_user_crud.distribute_users(
+                db=db,
+                db_name=db_name.strip(),
+                target_table=target_table.strip(),
+                frequency=frequency,
+                parts=parts
+            )
+            return result
     except ValueError as ve:
-        # Handle validation errors from CRUD layer
         raise HTTPException(
             status_code=400, 
             detail=f"Invalid input parameters: {str(ve)}"
         )
     except Exception as e:
-        # Handle unexpected errors
         raise HTTPException(
             status_code=500, 
             detail=f"An error occurred while distributing users: {str(e)}"

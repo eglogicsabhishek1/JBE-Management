@@ -18,8 +18,7 @@ logger = logging.getLogger(__name__)
 
 # Create router with tags for API documentation
 router = APIRouter(
-    tags=["User Count Management"],
-    prefix="/user-count"
+    tags=["User Count Management"]
 )
 
 @router.get("/count")
@@ -31,10 +30,12 @@ def get_user_count_by_database(
         min_length=1,
         max_length=64
     ),
-    include_backup: Optional[bool] = Query(
-        True,
-        description="Whether to create a backup of the job_alerts table before counting",
-        example=True
+    table_name: str = Query(
+        ..., 
+        description="Name of the target table",
+        example="job_table",
+        min_length=1,
+        max_length=64
     ),
     db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
@@ -55,7 +56,6 @@ def get_user_count_by_database(
         - status: Operation status ("success" or "error")
         - database: Name of the queried database
         - timestamp: When the operation was performed
-        - backup_created: Whether backup was created
         - user_statistics: Dictionary with user counts grouped by frequency
         - total_users: Total number of active users
         - summary: Human-readable summary of results
@@ -66,7 +66,7 @@ def get_user_count_by_database(
         HTTPException: 500 for database operation errors
     
     Example:
-        GET /api/v1/user-count/count?db_name=job_db&include_backup=true
+        GET user-count/count?db_name=job_db&table_name=job_table
         
         Response:
         {
@@ -104,8 +104,8 @@ def get_user_count_by_database(
         # Call the CRUD function to get user count statistics
         result = get_user_count(
             db_name=sanitized_db_name,
-            db=db,
-            include_backup=include_backup
+            table_name=table_name,
+            db=db
         )
         
         logger.info(f"Successfully retrieved user count for database: {sanitized_db_name}")
@@ -113,7 +113,6 @@ def get_user_count_by_database(
         return {
             "status": "success",
             "database": sanitized_db_name,
-            "backup_created": include_backup,
             "message": f"User count retrieved successfully from database '{sanitized_db_name}'",
             "data": result
         }
@@ -136,51 +135,5 @@ def get_user_count_by_database(
             status_code=500,
             detail=f"An error occurred while retrieving user count: {str(e)}"
         )
-
-@router.get("/backup-status")
-def get_backup_status(
-    db_name: str = Query(
-        ...,
-        description="Name of the database to check backup status",
-        example="job_management_db"
-    ),
-    db: Session = Depends(get_db)
-) -> Dict[str, Any]:
-    """
-    Check the backup status for a specific database.
-    
-    This endpoint checks if backup tables exist and provides information
-    about the most recent backups for the job_alerts table.
-    
-    Args:
-        db_name: Name of the database to check
-        db: Database session (injected dependency)
-    
-    Returns:
-        Dict containing backup status information
-    
-    Raises:
-        HTTPException: 400 for invalid database name
-        HTTPException: 500 for database operation errors
-    """
-    try:
-        # Implementation would go here to check backup status
-        # This is a placeholder for backup status checking functionality
-        
-        return {
-            "status": "success",
-            "database": db_name,
-            "backup_available": True,  # This would be determined by actual logic
-            "last_backup": "2024-01-15T09:00:00Z",  # Placeholder timestamp
-            "message": f"Backup status retrieved for database '{db_name}'"
-        }
-        
-    except Exception as e:
-        logger.error(f"Error checking backup status for database {db_name}: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"An error occurred while checking backup status: {str(e)}"
-        )
-
 
 

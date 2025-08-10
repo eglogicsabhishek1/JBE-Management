@@ -25,21 +25,19 @@ MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
 MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
 MYSQL_USER = os.getenv("MYSQL_USER")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
-MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
 
 # Validate required environment variables
 required_env_vars = {
     "MYSQL_USER": MYSQL_USER,
-    "MYSQL_PASSWORD": MYSQL_PASSWORD,
-    "MYSQL_DATABASE": MYSQL_DATABASE
-}
+    "MYSQL_PASSWORD": MYSQL_PASSWORD
+    }
 
 missing_vars = [var for var, value in required_env_vars.items() if not value]
 if missing_vars:
     raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
 # Construct database URL for MySQL with PyMySQL driver
-DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}"
 
 # Create database engine with connection pooling and health checks
 engine = create_engine(
